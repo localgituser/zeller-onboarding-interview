@@ -26,10 +26,10 @@ Implements screen 1 on page 2 of the brief. The merchant is authenticated and th
 
 | ID | Given / when | Then |
 | --- | --- | --- |
-| AC01 | I enter the step | Show “Your business information”, the existing explanatory text, selected “I have an ABN or ACN” option, labelled “ABN or ACN” input, clear control, Back and Next. The no-ABN branch is excluded from this delivery. |
+| AC01 | I enter the step | Show “Your business information”, the existing explanatory text, selected “I have an ABN or ACN” option, labelled “ABN or ACN” input, clear control, Back and Next. Use the dedicated identifier-entry URL in the shared navigation contract. The no-ABN branch is excluded from this delivery. |
 | AC02 | I type raw digits or paste a labelled/formatted identifier | Apply the shared normalisation rules before validation or downstream use. Accept a single leading `ABN`/`ACN` label (case-insensitive, optional colon), spaces and supported hyphens; retain leading zeros. Keep canonical digits separate from the spaced display. Use a numeric keyboard hint on a text input, while permitting clipboard labels. |
 | AC03 | I select Next or press Enter with empty/invalid input | Show the matching error below, focus the input, remain on this screen, and make zero lookup requests. |
-| AC04 | I submit a valid 11-digit ABN or 9-digit ACN | Emit one valid submission intent with normalised identifier and detected type to FE-02; validation alone does not assert registration exists. |
+| AC04 | I submit a valid 11-digit ABN or 9-digit ACN | Emit one valid submission intent with normalised identifier and detected type to FE-02. Push the details-step URL once before showing lookup progress; validation alone does not assert registration exists. Invalid input neither changes the URL nor adds history. |
 | AC05 | I edit after an error or activate clear | Remove the stale error; clear empties and focuses the input. No lookup occurs on typing, paste, blur, or clear. |
 | AC06 | I select Back | Return to the existing previous step with the identifier retained in onboarding memory. No lookup occurs. |
 | AC07 | I use a keyboard or screen reader | Label, clear control, buttons, and inline error are accessible; error is linked to the input and announced. At 320 CSS pixels wide there is no horizontal form scrolling. |
@@ -38,6 +38,8 @@ Implements screen 1 on page 2 of the brief. The merchant is authenticated and th
 | AC10 | I insert/delete digits in the middle, replace a selection, undo/redo, or backspace beside a generated space | Preserve logical caret/selection by digit position; deleting beside a separator deletes the intended adjacent digit. Do not jump to the end, trap deletion, lose digits, or trigger lookup. Defer formatting during input-method composition. |
 | AC11 | The identifier field is empty | Show the persistent label “ABN or ACN”, placeholder “e.g. 12 345 678 901”, and visible helper “ABN: 11 digits. ACN: 9 digits. You can paste labels, spaces or hyphens.” If an ACN type hint is retained, use placeholder “e.g. 123 456 789”. Placeholder examples are formatting guidance, never default values. |
 | AC12 | A label conflicts with digit length or declared request type, or the paste includes extra words/multiple identifiers | Keep an actionable error and make zero requests. Never extract an arbitrary valid-looking substring, truncate overflow, or silently relabel an ACN as an ABN. |
+| AC13 | I return using browser Back from loading, lookup error, retrieved details, or manual entry | Return to the identifier URL in one history step, with ABN/ACN retained and editable and focus on its input. Preserve same-identifier answers in current-session memory and the server retry budget. Navigation makes no lookup/save call. Browser Back from this entry step follows actual previous history; form Back uses the existing previous-step route. |
+| AC14 | I edit the identifier, then use browser Forward | Restore details only if they still match the currently selected identifier. Otherwise replace the unavailable details route with entry and retain my edited input, without a lookup. Refresh/direct entry follows the shared owned-draft restoration rules. |
 
 ## Validation and succinct feedback
 
@@ -55,6 +57,7 @@ Next remains enabled in the idle state so submission can reveal a clear error; i
 
 ## Implementation & architectural guardrails
 
+- Follow [URLs and browser navigation](08-shared-contracts.md#urls-and-browser-navigation); keep business identifiers/names out of URLs and history state.
 - Reuse existing field/button and responsive layout components. Do not reproduce the screenshot's light-grey text at the expense of readability.
 - Client and backend run the same versioned normalisation before identifier validation, cache keys, idempotency comparison, provider access, or persistence. Use canonical digits/type in later fields and payloads; format on display only. Never convert to a number or derive an ABN from an ACN.
 - Do not set a raw 11-character input limit: labelled/spaced pastes are longer. Keep overflow visible for correction. Reject unsupported text without silently stripping it. The exact partial-entry spacing and caret rules live in the shared contract.
@@ -67,4 +70,4 @@ Provider access, cache storage, business-name search, no-ABN flow, and any asser
 
 ## Verification / handover
 
-Use the shared normalisation/formatting fixtures, including prefixes, Unicode whitespace/common hyphens, leading zeros, conflicting labels, malformed pastes, and partial entry. Verify invalid characters, overflow, and checksum failures produce zero network lookups; one explicit valid submission produces one lookup intent. Test mid-string edits, separator deletion, selection paste, undo/redo, accessible placeholder/helper text, keyboard submission, and error announcement. Compare client/server outputs for every fixture.
+Use the shared normalisation/formatting fixtures, including prefixes, Unicode whitespace/common hyphens, leading zeros, conflicting labels, malformed pastes, and partial entry. Verify invalid characters, overflow, and checksum failures produce zero network lookups; one explicit valid submission produces one lookup intent. Test mid-string edits, separator deletion, selection paste, undo/redo, accessible placeholder/helper text, keyboard submission, and error announcement. Compare client/server outputs for every fixture. Test browser and form Back, Forward after identifier edits, invalid-submit history, refresh/direct entry, focus restoration, and zero lookup/save calls on navigation.

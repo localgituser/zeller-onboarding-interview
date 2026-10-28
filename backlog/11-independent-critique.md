@@ -22,6 +22,8 @@ The original assessment below describes the pre-fix pack. The primary agent appl
 
 Additional requested UX changes: FE-01/shared contract cover live spacing, labelled and separated pastes, canonical identity reuse, client/server parity, caret handling, and useful placeholders. The reference fixtures are checked separately; no application implementation or live API behaviour is claimed.
 
+Subsequent user-directed recovery changes are outside the historical assessment below: lookup now has a 3-second UI cap and primary manual fallback, with editable unverified identity and a save branch that needs no lookup reference. See FE-02–FE-05 and the shared contract; no fresh independent review is claimed.
+
 ## Verdict
 
 The backlog meets the exercise's main behavioural requirements and incorporates the user's additions carefully. The ABR research is broadly accurate: the selected methods, distinction between entity and business names, optional/suppressed fields, and application-error handling agree with the official guides. There is no fundamental API misunderstanding that requires rewriting the happy path.
